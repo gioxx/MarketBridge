@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+:root {
+  --bg-top: #fdf2e7;
+  --bg-bottom: #fffdf8;
+  --card: #ffffff;
+  --brand: #0f766e;
+  --brand-dark: #115e59;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --line: #d1d5db;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(160deg, var(--bg-top) 0%, var(--bg-bottom) 45%, #eef6f5 100%);
+  color: var(--text);
+  font-family: "Trebuchet MS", "Gill Sans", sans-serif;
+}
+
+.input {
+  @apply mt-1 w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2 text-sm text-[var(--text)] outline-none transition;
+}
+
+.input:focus {
+  @apply ring-2 ring-teal-600/20 border-teal-700;
+}
+
+.label {
+  @apply text-sm font-semibold text-[var(--text)];
+}
