@@ -1,7 +1,7 @@
 # MarketBridge
 
 Mini progetto Next.js + Tailwind per simulare la pubblicazione di un prodotto in stile Vinted con:
-- upload reale immagine
+- upload reale immagini (multiple, max 10)
 - salvataggio persistente su SQLite
 - modifica successiva dell'entry
 

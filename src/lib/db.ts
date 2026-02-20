@@ -11,7 +11,7 @@ export type ListingRecord = {
   size: string;
   price: number;
   description: string;
-  imageFileName: string;
+  imageFileNames: string[];
   createdAt: string;
   updatedAt: string;
 };
@@ -40,6 +40,13 @@ db.exec(`
   )
 `);
 
+const columns = db.prepare("PRAGMA table_info(listings)").all() as Array<{ name: string }>;
+const hasImageFileNames = columns.some((column) => column.name === "image_file_names");
+if (!hasImageFileNames) {
+  db.exec("ALTER TABLE listings ADD COLUMN image_file_names TEXT");
+  db.exec("UPDATE listings SET image_file_names = json_array(image_file_name) WHERE image_file_name IS NOT NULL");
+}
+
 type ListingRow = {
   id: number;
   title: string;
@@ -49,8 +56,22 @@ type ListingRow = {
   price: number;
   description: string;
   image_file_name: string;
+  image_file_names: string | null;
   created_at: string;
   updated_at: string;
+};
+
+const parseImageNames = (value: string | null, fallback: string): string[] => {
+  if (value) {
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      if (Array.isArray(parsed)) {
+        return parsed.filter((item): item is string => typeof item === "string");
+      }
+    } catch {}
+  }
+
+  return fallback ? [fallback] : [];
 };
 
 const mapRow = (row: ListingRow): ListingRecord => ({
@@ -61,14 +82,14 @@ const mapRow = (row: ListingRow): ListingRecord => ({
   size: row.size,
   price: row.price,
   description: row.description,
-  imageFileName: row.image_file_name,
+  imageFileNames: parseImageNames(row.image_file_names, row.image_file_name),
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });
 
 export const listListings = (): ListingRecord[] => {
   const stmt = db.prepare(
-    `SELECT id, title, category, condition, size, price, description, image_file_name, created_at, updated_at
+    `SELECT id, title, category, condition, size, price, description, image_file_name, image_file_names, created_at, updated_at
      FROM listings
      ORDER BY datetime(updated_at) DESC`
   );
@@ -79,7 +100,7 @@ export const listListings = (): ListingRecord[] => {
 
 export const getListingById = (id: number): ListingRecord | null => {
   const stmt = db.prepare(
-    `SELECT id, title, category, condition, size, price, description, image_file_name, created_at, updated_at
+    `SELECT id, title, category, condition, size, price, description, image_file_name, image_file_names, created_at, updated_at
      FROM listings
      WHERE id = ?`
   );
@@ -96,8 +117,8 @@ export const createListing = (input: ListingInput): ListingRecord => {
   const now = new Date().toISOString();
 
   const stmt = db.prepare(
-    `INSERT INTO listings (title, category, condition, size, price, description, image_file_name, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO listings (title, category, condition, size, price, description, image_file_name, image_file_names, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
 
   const result = stmt.run(
@@ -107,7 +128,8 @@ export const createListing = (input: ListingInput): ListingRecord => {
     input.size,
     input.price,
     input.description,
-    input.imageFileName,
+    input.imageFileNames[0] ?? "",
+    JSON.stringify(input.imageFileNames),
     now,
     now
   );
@@ -126,6 +148,7 @@ export const updateListing = (id: number, input: ListingInput): ListingRecord | 
          price = ?,
          description = ?,
          image_file_name = ?,
+         image_file_names = ?,
          updated_at = ?
      WHERE id = ?`
   );
@@ -137,7 +160,8 @@ export const updateListing = (id: number, input: ListingInput): ListingRecord | 
     input.size,
     input.price,
     input.description,
-    input.imageFileName,
+    input.imageFileNames[0] ?? "",
+    JSON.stringify(input.imageFileNames),
     now,
     id
   );
@@ -147,4 +171,10 @@ export const updateListing = (id: number, input: ListingInput): ListingRecord | 
   }
 
   return getListingById(id);
+};
+
+export const deleteListing = (id: number): boolean => {
+  const stmt = db.prepare("DELETE FROM listings WHERE id = ?");
+  const result = stmt.run(id);
+  return result.changes > 0;
 };

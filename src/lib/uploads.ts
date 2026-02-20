@@ -37,6 +37,17 @@ export const saveImage = async (file: File): Promise<string> => {
   return filename;
 };
 
+export const saveImages = async (files: File[]): Promise<string[]> => {
+  const saved: string[] = [];
+  for (const file of files) {
+    // Sequential write keeps file system pressure predictable inside container.
+    // eslint-disable-next-line no-await-in-loop
+    const fileName = await saveImage(file);
+    saved.push(fileName);
+  }
+  return saved;
+};
+
 export const imagePath = (fileName: string): string => {
   return path.join(uploadsDir, fileName);
 };

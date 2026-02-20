@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createListing, listListings } from "@/lib/db";
-import { saveImage } from "@/lib/uploads";
+import { saveImages } from "@/lib/uploads";
 
 export const runtime = "nodejs";
 
@@ -22,6 +22,10 @@ const readText = (value: FormDataEntryValue | null): string => {
   return typeof value === "string" ? value.trim() : "";
 };
 
+const asImageFiles = (entries: FormDataEntryValue[]): File[] => {
+  return entries.filter((entry): entry is File => entry instanceof File && entry.size > 0);
+};
+
 export async function GET() {
   const listings = listListings();
   return NextResponse.json({ listings });
@@ -37,17 +41,21 @@ export async function POST(request: Request) {
     const size = readText(formData.get("size"));
     const description = readText(formData.get("description"));
     const price = parsePrice(formData.get("price"));
-    const image = formData.get("image");
+    const images = asImageFiles(formData.getAll("images"));
 
     if (!title || !category || !condition || !size || !description || !price) {
       return NextResponse.json({ error: "Compila tutti i campi obbligatori." }, { status: 400 });
     }
 
-    if (!(image instanceof File) || image.size === 0) {
-      return NextResponse.json({ error: "Seleziona un'immagine valida." }, { status: 400 });
+    if (images.length === 0) {
+      return NextResponse.json({ error: "Carica almeno un'immagine valida." }, { status: 400 });
     }
 
-    const imageFileName = await saveImage(image);
+    if (images.length > 10) {
+      return NextResponse.json({ error: "Puoi caricare massimo 10 immagini." }, { status: 400 });
+    }
+
+    const imageFileNames = await saveImages(images);
 
     const listing = createListing({
       title,
@@ -56,7 +64,7 @@ export async function POST(request: Request) {
       size,
       price,
       description,
-      imageFileName,
+      imageFileNames,
     });
 
     return NextResponse.json({ listing }, { status: 201 });

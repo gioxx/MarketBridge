@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { getListingById, updateListing } from "@/lib/db";
-import { deleteImage, saveImage } from "@/lib/uploads";
+import { deleteListing, getListingById, updateListing } from "@/lib/db";
+import { deleteImage, saveImages } from "@/lib/uploads";
 
 export const runtime = "nodejs";
 
@@ -20,6 +20,10 @@ const parsePrice = (value: FormDataEntryValue | null): number | null => {
 
 const readText = (value: FormDataEntryValue | null): string => {
   return typeof value === "string" ? value.trim() : "";
+};
+
+const asImageFiles = (entries: FormDataEntryValue[]): File[] => {
+  return entries.filter((entry): entry is File => entry instanceof File && entry.size > 0);
 };
 
 export async function PUT(
@@ -47,16 +51,39 @@ export async function PUT(
     const size = readText(formData.get("size"));
     const description = readText(formData.get("description"));
     const price = parsePrice(formData.get("price"));
-    const image = formData.get("image");
+    const images = asImageFiles(formData.getAll("images"));
+    const existingImageFileNamesRaw = readText(formData.get("existingImageFileNames"));
 
     if (!title || !category || !condition || !size || !description || !price) {
       return NextResponse.json({ error: "Compila tutti i campi obbligatori." }, { status: 400 });
     }
 
-    let imageFileName = current.imageFileName;
-    if (image instanceof File && image.size > 0) {
-      imageFileName = await saveImage(image);
-      deleteImage(current.imageFileName);
+    let keptImageFileNames: string[] = current.imageFileNames;
+    if (existingImageFileNamesRaw) {
+      try {
+        const parsed = JSON.parse(existingImageFileNamesRaw) as unknown;
+        if (!Array.isArray(parsed) || parsed.some((item) => typeof item !== "string")) {
+          return NextResponse.json({ error: "Formato immagini esistenti non valido." }, { status: 400 });
+        }
+        keptImageFileNames = parsed.filter((name) => current.imageFileNames.includes(name));
+      } catch {
+        return NextResponse.json({ error: "Formato immagini esistenti non valido." }, { status: 400 });
+      }
+    }
+
+    if (keptImageFileNames.length + images.length > 10) {
+      return NextResponse.json({ error: "Puoi salvare massimo 10 immagini." }, { status: 400 });
+    }
+
+    const newImageFileNames = images.length > 0 ? await saveImages(images) : [];
+    const imageFileNames = Array.from(new Set([...keptImageFileNames, ...newImageFileNames]));
+    if (imageFileNames.length === 0) {
+      return NextResponse.json({ error: "L'annuncio deve avere almeno un'immagine." }, { status: 400 });
+    }
+    for (const oldName of current.imageFileNames) {
+      if (!keptImageFileNames.includes(oldName)) {
+        deleteImage(oldName);
+      }
     }
 
     const listing = updateListing(id, {
@@ -66,7 +93,7 @@ export async function PUT(
       size,
       price,
       description,
-      imageFileName,
+      imageFileNames,
     });
 
     if (!listing) {
@@ -76,6 +103,39 @@ export async function PUT(
     return NextResponse.json({ listing });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Errore durante l'aggiornamento.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: idParam } = await params;
+    const id = Number(idParam);
+
+    if (!Number.isInteger(id)) {
+      return NextResponse.json({ error: "ID non valido." }, { status: 400 });
+    }
+
+    const current = getListingById(id);
+    if (!current) {
+      return NextResponse.json({ error: "Annuncio non trovato." }, { status: 404 });
+    }
+
+    const deleted = deleteListing(id);
+    if (!deleted) {
+      return NextResponse.json({ error: "Eliminazione non riuscita." }, { status: 500 });
+    }
+
+    for (const imageName of current.imageFileNames) {
+      deleteImage(imageName);
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Errore durante l'eliminazione.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
