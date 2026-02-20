@@ -1,36 +1,36 @@
 # MarketBridge
 
-Mini progetto Next.js + Tailwind per simulare la pubblicazione di un prodotto in stile Vinted con:
-- upload reale immagini (multiple, max 10)
-- salvataggio persistente su SQLite
-- modifica successiva dell'entry
-- supporto PWA installabile (manifest + service worker)
+A lightweight Next.js + Tailwind app to prepare marketplace listings with:
+- real image uploads (multiple, up to 10)
+- persistent SQLite storage
+- editable saved entries
+- installable PWA support (manifest + service worker)
 
-## Persistenza
+## Persistence
 
 - Database: `data/marketbridge.db`
-- Immagini: `data/uploads/`
+- Images: `data/uploads/`
 
-## Avvio locale
+## Run locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Apri `http://localhost:3000`.
+Open `http://localhost:3000`.
 
-## Avvio con Docker / Portainer
+## Run with Docker / Portainer
 
 ```bash
 docker compose up --build
 ```
 
-Apri `http://localhost:3001`.
+Open `http://localhost:3001`.
 
-Nel compose c'e un volume Docker named `marketbridge_data` montato su `/app/data` per mantenere persistenza tra restart/redeploy.
+The compose file includes a Docker named volume `marketbridge_data` mounted at `/app/data` so data survives restarts/redeploys.
 
-## Installazione come app (PWA)
+## Install as an app (PWA)
 
-- In locale: su Chrome/Edge puoi testare l'installazione da `http://localhost:3000`.
-- In produzione: serve HTTPS per avere installazione affidabile su Android/iOS.
+- Local: on Chrome/Edge you can test installability from `http://localhost:3000`.
+- Production: HTTPS is required for reliable install behavior on Android/iOS.

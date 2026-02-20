@@ -24,7 +24,7 @@ const sanitizeBase = (value: string): string => {
 export const saveImage = async (file: File): Promise<string> => {
   const extension = extensionByMime[file.type];
   if (!extension) {
-    throw new Error("Formato immagine non supportato. Usa JPG, PNG o WEBP.");
+    throw new Error("Unsupported image format. Use JPG, PNG, or WEBP.");
   }
 
   const base = sanitizeBase(file.name.replace(/\.[^.]+$/, "")) || "image";

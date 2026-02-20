@@ -44,15 +44,15 @@ export async function POST(request: Request) {
     const images = asImageFiles(formData.getAll("images"));
 
     if (!title || !category || !condition || !size || !description || !price) {
-      return NextResponse.json({ error: "Compila tutti i campi obbligatori." }, { status: 400 });
+      return NextResponse.json({ error: "Please fill in all required fields." }, { status: 400 });
     }
 
     if (images.length === 0) {
-      return NextResponse.json({ error: "Carica almeno un'immagine valida." }, { status: 400 });
+      return NextResponse.json({ error: "Upload at least one valid image." }, { status: 400 });
     }
 
     if (images.length > 10) {
-      return NextResponse.json({ error: "Puoi caricare massimo 10 immagini." }, { status: 400 });
+      return NextResponse.json({ error: "You can upload up to 10 images." }, { status: 400 });
     }
 
     const imageFileNames = await saveImages(images);
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ listing }, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Errore durante il salvataggio.";
+    const message = error instanceof Error ? error.message : "Error while saving.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

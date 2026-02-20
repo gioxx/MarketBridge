@@ -35,12 +35,12 @@ export async function PUT(
     const id = Number(idParam);
 
     if (!Number.isInteger(id)) {
-      return NextResponse.json({ error: "ID non valido." }, { status: 400 });
+      return NextResponse.json({ error: "Invalid ID." }, { status: 400 });
     }
 
     const current = getListingById(id);
     if (!current) {
-      return NextResponse.json({ error: "Annuncio non trovato." }, { status: 404 });
+      return NextResponse.json({ error: "Listing not found." }, { status: 404 });
     }
 
     const formData = await request.formData();
@@ -63,22 +63,22 @@ export async function PUT(
       try {
         const parsed = JSON.parse(existingImageFileNamesRaw) as unknown;
         if (!Array.isArray(parsed) || parsed.some((item) => typeof item !== "string")) {
-          return NextResponse.json({ error: "Formato immagini esistenti non valido." }, { status: 400 });
+          return NextResponse.json({ error: "Invalid existing images payload." }, { status: 400 });
         }
         keptImageFileNames = parsed.filter((name) => current.imageFileNames.includes(name));
       } catch {
-        return NextResponse.json({ error: "Formato immagini esistenti non valido." }, { status: 400 });
+        return NextResponse.json({ error: "Invalid existing images payload." }, { status: 400 });
       }
     }
 
     if (keptImageFileNames.length + images.length > 10) {
-      return NextResponse.json({ error: "Puoi salvare massimo 10 immagini." }, { status: 400 });
+      return NextResponse.json({ error: "You can save up to 10 images." }, { status: 400 });
     }
 
     const newImageFileNames = images.length > 0 ? await saveImages(images) : [];
     const imageFileNames = Array.from(new Set([...keptImageFileNames, ...newImageFileNames]));
     if (imageFileNames.length === 0) {
-      return NextResponse.json({ error: "L'annuncio deve avere almeno un'immagine." }, { status: 400 });
+      return NextResponse.json({ error: "A listing must have at least one image." }, { status: 400 });
     }
     for (const oldName of current.imageFileNames) {
       if (!keptImageFileNames.includes(oldName)) {
@@ -97,12 +97,12 @@ export async function PUT(
     });
 
     if (!listing) {
-      return NextResponse.json({ error: "Aggiornamento non riuscito." }, { status: 404 });
+      return NextResponse.json({ error: "Update failed." }, { status: 404 });
     }
 
     return NextResponse.json({ listing });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Errore durante l'aggiornamento.";
+    const message = error instanceof Error ? error.message : "Error while updating.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
@@ -116,17 +116,17 @@ export async function DELETE(
     const id = Number(idParam);
 
     if (!Number.isInteger(id)) {
-      return NextResponse.json({ error: "ID non valido." }, { status: 400 });
+      return NextResponse.json({ error: "Invalid ID." }, { status: 400 });
     }
 
     const current = getListingById(id);
     if (!current) {
-      return NextResponse.json({ error: "Annuncio non trovato." }, { status: 404 });
+      return NextResponse.json({ error: "Listing not found." }, { status: 404 });
     }
 
     const deleted = deleteListing(id);
     if (!deleted) {
-      return NextResponse.json({ error: "Eliminazione non riuscita." }, { status: 500 });
+      return NextResponse.json({ error: "Delete failed." }, { status: 500 });
     }
 
     for (const imageName of current.imageFileNames) {
@@ -135,7 +135,7 @@ export async function DELETE(
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Errore durante l'eliminazione.";
+    const message = error instanceof Error ? error.message : "Error while deleting.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

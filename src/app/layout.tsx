@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MarketBridge | Prepara Annunci per Vinted e Wallapop",
+  title: "MarketBridge | Prepare Listings for Vinted and Wallapop",
   description:
-    "MarketBridge ti aiuta a preparare annunci una volta sola: upload immagini, salvataggio locale e copia rapida dei contenuti verso Vinted o Wallapop.",
+    "MarketBridge helps you prepare listings once: upload images, save drafts locally, and quickly copy content to Vinted or Wallapop.",
   applicationName: "MarketBridge",
   manifest: "/manifest.webmanifest",
   icons: {
@@ -32,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="it">
+    <html lang="en">
       <body>{children}</body>
     </html>
   );
