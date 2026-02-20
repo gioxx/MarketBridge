@@ -4,6 +4,7 @@ Mini progetto Next.js + Tailwind per simulare la pubblicazione di un prodotto in
 - upload reale immagini (multiple, max 10)
 - salvataggio persistente su SQLite
 - modifica successiva dell'entry
+- supporto PWA installabile (manifest + service worker)
 
 ## Persistenza
 
@@ -28,3 +29,8 @@ docker compose up --build
 Apri `http://localhost:3001`.
 
 Nel compose c'e un volume Docker named `marketbridge_data` montato su `/app/data` per mantenere persistenza tra restart/redeploy.
+
+## Installazione come app (PWA)
+
+- In locale: su Chrome/Edge puoi testare l'installazione da `http://localhost:3000`.
+- In produzione: serve HTTPS per avere installazione affidabile su Android/iOS.

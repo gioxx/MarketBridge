@@ -76,6 +76,26 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (!("serviceWorker" in navigator)) {
+      return;
+    }
+
+    const register = () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {
+        // Service worker registration is optional; app remains fully usable.
+      });
+    };
+
+    if (document.readyState === "complete") {
+      register();
+      return;
+    }
+
+    window.addEventListener("load", register);
+    return () => window.removeEventListener("load", register);
+  }, []);
+
+  useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const applyTheme = () => {
       const nextTheme =
