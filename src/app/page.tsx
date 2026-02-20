@@ -27,6 +27,9 @@ type Listing = {
 };
 
 type ThemePreference = "system" | "light" | "dark";
+type PreviewImageItem =
+  | { key: string; url: string; isNew: true; newIndex: number }
+  | { key: string; url: string; isNew: false; existingName: string };
 
 const initialForm: FormState = {
   title: "",
@@ -72,15 +75,15 @@ export default function Home() {
     return () => media.removeEventListener("change", applyTheme);
   }, [themePreference]);
 
-  const previewImageUrls = useMemo(() => {
-    const localUrls = selectedFiles.map((file, index) => ({
+  const previewImageUrls = useMemo<PreviewImageItem[]>(() => {
+    const localUrls: PreviewImageItem[] = selectedFiles.map((file, index) => ({
       key: `new-${file.name}-${file.size}`,
       url: URL.createObjectURL(file),
       isNew: true,
       newIndex: index,
     }));
 
-    const existingUrls = keptEditingImages.map((name) => ({
+    const existingUrls: PreviewImageItem[] = keptEditingImages.map((name) => ({
       key: `existing-${name}`,
       url: `/api/uploads/${encodeURIComponent(name)}`,
       isNew: false,
@@ -422,7 +425,7 @@ export default function Home() {
                         <button
                           type="button"
                           onClick={() => {
-                            if (item.existingName) {
+                            if ("existingName" in item) {
                               removeExistingImage(item.existingName);
                             }
                           }}
@@ -435,7 +438,7 @@ export default function Home() {
                         <button
                           type="button"
                           onClick={() => {
-                            if (typeof item.newIndex === "number") {
+                            if ("newIndex" in item) {
                               removeNewImage(item.newIndex);
                             }
                           }}
