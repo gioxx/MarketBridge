@@ -40,6 +40,18 @@ const initialForm: FormState = {
   description: "",
 };
 
+const safeImageSrc = (value: string): string | null => {
+  if (value.startsWith("blob:")) {
+    return value;
+  }
+
+  if (value.startsWith("/api/uploads/")) {
+    return value;
+  }
+
+  return null;
+};
+
 export default function Home() {
   const [form, setForm] = useState<FormState>(initialForm);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -483,7 +495,11 @@ export default function Home() {
                   {previewImageUrls.map((item, index) => (
                     <div key={item.key} className="relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={item.url} alt={`Anteprima ${index + 1}`} className="h-24 w-full rounded-md object-cover" />
+                      <img
+                        src={safeImageSrc(item.url) ?? "/marketbridge-logo.svg"}
+                        alt={`Anteprima ${index + 1}`}
+                        className="h-24 w-full rounded-md object-cover"
+                      />
                       {editingId && !item.isNew && (
                         <button
                           type="button"
@@ -666,7 +682,11 @@ export default function Home() {
                   return (
                     <article key={fileName} className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] p-2">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={imagePath} alt={`Immagine ${index + 1}`} className="h-28 w-full rounded object-cover" />
+                      <img
+                        src={safeImageSrc(imagePath) ?? "/marketbridge-logo.svg"}
+                        alt={`Immagine ${index + 1}`}
+                        className="h-28 w-full rounded object-cover"
+                      />
                       <p className="mt-2 text-xs text-[var(--muted)]">Immagine {index + 1}</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         <button
