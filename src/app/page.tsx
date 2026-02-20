@@ -50,6 +50,8 @@ export default function Home() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
+  const [viewingId, setViewingId] = useState<number | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [themePreference, setThemePreference] = useState<ThemePreference>("system");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
@@ -104,6 +106,10 @@ export default function Home() {
   }, [previewImageUrls]);
 
   const totalSelectedImages = keptEditingImages.length + selectedFiles.length;
+  const viewingEntry = useMemo(
+    () => listings.find((entry) => entry.id === viewingId) ?? null,
+    [listings, viewingId]
+  );
 
   const canSubmit = useMemo(() => {
     const base = form.title.trim() && form.price.trim() && form.description.trim();
@@ -242,6 +248,9 @@ export default function Home() {
       if (editingId === id) {
         reset();
       }
+      if (viewingId === id) {
+        setViewingId(null);
+      }
       await fetchListings();
       setDone("Annuncio eliminato con successo.");
     } catch (caught) {
@@ -256,6 +265,61 @@ export default function Home() {
     setThemePreference(nextTheme);
     window.localStorage.setItem("marketbridge-theme", nextTheme);
   };
+
+  const copyField = async (fieldKey: string, value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedField(fieldKey);
+      window.setTimeout(() => {
+        setCopiedField((current) => (current === fieldKey ? null : current));
+      }, 1500);
+    } catch {
+      setError("Copia non riuscita. Controlla i permessi del browser.");
+    }
+  };
+
+  const getImagePath = (fileName: string) => `/api/uploads/${encodeURIComponent(fileName)}`;
+  const getAbsoluteImageUrl = (fileName: string) => {
+    if (typeof window === "undefined") {
+      return getImagePath(fileName);
+    }
+    return `${window.location.origin}${getImagePath(fileName)}`;
+  };
+
+  const platformTexts = useMemo(() => {
+    if (!viewingEntry) {
+      return null;
+    }
+
+    const vinted = [
+      viewingEntry.title,
+      "",
+      `Condizioni: ${viewingEntry.condition}`,
+      `Categoria: ${viewingEntry.category}`,
+      `Taglia: ${viewingEntry.size}`,
+      `Prezzo: ${viewingEntry.price} EUR`,
+      "",
+      "Descrizione:",
+      viewingEntry.description,
+      "",
+      "Spedizione disponibile tramite Vinted.",
+    ].join("\n");
+
+    const wallapop = [
+      viewingEntry.title,
+      "",
+      `Prezzo: ${viewingEntry.price} EUR`,
+      `Categoria: ${viewingEntry.category}`,
+      `Condizioni: ${viewingEntry.condition}`,
+      `Taglia: ${viewingEntry.size}`,
+      "",
+      viewingEntry.description,
+      "",
+      "Consegna a mano o spedizione disponibile.",
+    ].join("\n");
+
+    return { vinted, wallapop };
+  }, [viewingEntry]);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-8">
@@ -505,6 +569,13 @@ export default function Home() {
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
+                        onClick={() => setViewingId(entry.id)}
+                        className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)]"
+                      >
+                        Visualizza
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => beginEdit(entry)}
                         className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)]"
                       >
@@ -525,6 +596,147 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      {viewingEntry && (
+        <section className="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-5 shadow-sm sm:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-xl font-bold">Dettaglio annuncio #{viewingEntry.id}</h2>
+            <button
+              type="button"
+              onClick={() => setViewingId(null)}
+              className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)]"
+            >
+              Chiudi
+            </button>
+          </div>
+
+          <div className="mt-4 grid gap-3">
+            {[
+              { key: "title", label: "Titolo", value: viewingEntry.title, canCopy: true },
+              { key: "category", label: "Categoria", value: viewingEntry.category, canCopy: false },
+              { key: "condition", label: "Condizioni", value: viewingEntry.condition, canCopy: false },
+              { key: "size", label: "Taglia", value: viewingEntry.size, canCopy: false },
+              { key: "price", label: "Prezzo", value: `${viewingEntry.price} EUR`, canCopy: true },
+              { key: "description", label: "Descrizione", value: viewingEntry.description, canCopy: true },
+            ].map((field) => (
+              <div
+                key={field.key}
+                className="flex flex-col gap-2 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-3 sm:flex-row sm:items-start sm:justify-between"
+              >
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">{field.label}</p>
+                  <p className="mt-1 whitespace-pre-wrap break-words text-sm text-[var(--text)]">{field.value}</p>
+                </div>
+                {field.canCopy && (
+                  <button
+                    type="button"
+                    onClick={() => copyField(field.key, field.value)}
+                    className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)]"
+                  >
+                    {copiedField === field.key ? "Copiato" : "Copia"}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {platformTexts && (
+            <div className="mt-6 grid gap-4 lg:grid-cols-2">
+              <article className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-3">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-bold text-[var(--text)]">Testo pronto per Vinted</h3>
+                  <button
+                    type="button"
+                    onClick={() => copyField("platform-vinted", platformTexts.vinted)}
+                    className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)]"
+                  >
+                    {copiedField === "platform-vinted" ? "Copiato" : "Copia"}
+                  </button>
+                </div>
+                <pre className="whitespace-pre-wrap break-words text-xs text-[var(--text)]">
+                  {platformTexts.vinted}
+                </pre>
+              </article>
+
+              <article className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-3">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-bold text-[var(--text)]">Testo pronto per Wallapop</h3>
+                  <button
+                    type="button"
+                    onClick={() => copyField("platform-wallapop", platformTexts.wallapop)}
+                    className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)]"
+                  >
+                    {copiedField === "platform-wallapop" ? "Copiato" : "Copia"}
+                  </button>
+                </div>
+                <pre className="whitespace-pre-wrap break-words text-xs text-[var(--text)]">
+                  {platformTexts.wallapop}
+                </pre>
+              </article>
+            </div>
+          )}
+
+          <div className="mt-6 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-3">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-sm font-bold text-[var(--text)]">Immagini pronte per upload</h3>
+              <button
+                type="button"
+                onClick={() =>
+                  copyField(
+                    "images-all-urls",
+                    viewingEntry.imageFileNames.map((fileName) => getAbsoluteImageUrl(fileName)).join("\n")
+                  )
+                }
+                className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)]"
+              >
+                {copiedField === "images-all-urls" ? "Copiato" : "Copia tutti gli URL"}
+              </button>
+            </div>
+
+            {viewingEntry.imageFileNames.length === 0 ? (
+              <p className="text-xs text-[var(--muted)]">Nessuna immagine disponibile.</p>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {viewingEntry.imageFileNames.map((fileName, index) => {
+                  const imagePath = getImagePath(fileName);
+
+                  return (
+                    <article key={fileName} className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] p-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imagePath} alt={`Immagine ${index + 1}`} className="h-28 w-full rounded object-cover" />
+                      <p className="mt-2 text-xs text-[var(--muted)]">Immagine {index + 1}</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => copyField(`image-url-${fileName}`, getAbsoluteImageUrl(fileName))}
+                          className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-2 py-1 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface-2)]"
+                        >
+                          {copiedField === `image-url-${fileName}` ? "Copiato" : "Copia URL"}
+                        </button>
+                        <a
+                          href={imagePath}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-2 py-1 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface-2)]"
+                        >
+                          Apri
+                        </a>
+                        <a
+                          href={imagePath}
+                          download={fileName}
+                          className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-2 py-1 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface-2)]"
+                        >
+                          Scarica
+                        </a>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </main>
   );
 }
