@@ -5,6 +5,10 @@ export const metadata: Metadata = {
   title: "MarketBridge | Prepara Annunci per Vinted e Wallapop",
   description:
     "MarketBridge ti aiuta a preparare annunci una volta sola: upload immagini, salvataggio locale e copia rapida dei contenuti verso Vinted o Wallapop.",
+  icons: {
+    icon: "/marketbridge-logo.svg",
+    shortcut: "/marketbridge-logo.svg",
+  },
 };
 
 export default function RootLayout({

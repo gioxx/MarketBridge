@@ -43,7 +43,15 @@ db.exec(`
 const columns = db.prepare("PRAGMA table_info(listings)").all() as Array<{ name: string }>;
 const hasImageFileNames = columns.some((column) => column.name === "image_file_names");
 if (!hasImageFileNames) {
-  db.exec("ALTER TABLE listings ADD COLUMN image_file_names TEXT");
+  try {
+    db.exec("ALTER TABLE listings ADD COLUMN image_file_names TEXT");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    // Build/runtime can evaluate this module concurrently; second ALTER may race.
+    if (!message.includes("duplicate column name: image_file_names")) {
+      throw error;
+    }
+  }
   db.exec("UPDATE listings SET image_file_names = json_array(image_file_name) WHERE image_file_name IS NOT NULL");
 }
 
