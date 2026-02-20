@@ -1,7 +1,7 @@
 {
   "name": "MarketBridge",
   "short_name": "MarketBridge",
-  "description": "Prepare listings once and publish to Vinted or Wallapop.",
+  "description": "Create your sale ad once, then post it on Vinted or Wallapop.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

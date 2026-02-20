@@ -1,6 +1,6 @@
 # MarketBridge
 
-A lightweight Next.js + Tailwind app to prepare marketplace listings with:
+A lightweight Next.js + Tailwind app to prepare marketplace sale ads with:
 - real image uploads (multiple, up to 10)
 - persistent SQLite storage
 - editable saved entries

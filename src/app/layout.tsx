@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "MarketBridge | Prepare Listings for Vinted and Wallapop",
   description:
-    "MarketBridge helps you prepare listings once: upload images, save drafts locally, and quickly copy content to Vinted or Wallapop.",
+    "MarketBridge helps you prepare sale ads once: upload images, save drafts locally, and quickly copy content to Vinted or Wallapop.",
   applicationName: "MarketBridge",
   manifest: "/manifest.webmanifest",
   icons: {
