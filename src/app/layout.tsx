@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MarketBridge Demo",
-  description: "Simulatore caricamento prodotto in stile Vinted",
+  title: "MarketBridge | Prepara Annunci per Vinted e Wallapop",
+  description:
+    "MarketBridge ti aiuta a preparare annunci una volta sola: upload immagini, salvataggio locale e copia rapida dei contenuti verso Vinted o Wallapop.",
 };
 
 export default function RootLayout({
