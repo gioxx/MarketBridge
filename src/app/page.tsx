@@ -52,6 +52,7 @@ export default function Home() {
   const [done, setDone] = useState<string | null>(null);
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
   const [themePreference, setThemePreference] = useState<ThemePreference>("system");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
@@ -104,6 +105,16 @@ export default function Home() {
       }
     };
   }, [previewImageUrls]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setShowBackToTop(window.scrollY > 320);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const totalSelectedImages = keptEditingImages.length + selectedFiles.length;
   const viewingEntry = useMemo(
@@ -268,7 +279,22 @@ export default function Home() {
 
   const copyField = async (fieldKey: string, value: string) => {
     try {
-      await navigator.clipboard.writeText(value);
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = value;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        const ok = document.execCommand("copy");
+        document.body.removeChild(textarea);
+        if (!ok) {
+          throw new Error("Clipboard fallback failed");
+        }
+      }
       setCopiedField(fieldKey);
       window.setTimeout(() => {
         setCopiedField((current) => (current === fieldKey ? null : current));
@@ -285,41 +311,6 @@ export default function Home() {
     }
     return `${window.location.origin}${getImagePath(fileName)}`;
   };
-
-  const platformTexts = useMemo(() => {
-    if (!viewingEntry) {
-      return null;
-    }
-
-    const vinted = [
-      viewingEntry.title,
-      "",
-      `Condizioni: ${viewingEntry.condition}`,
-      `Categoria: ${viewingEntry.category}`,
-      `Taglia: ${viewingEntry.size}`,
-      `Prezzo: ${viewingEntry.price} EUR`,
-      "",
-      "Descrizione:",
-      viewingEntry.description,
-      "",
-      "Spedizione disponibile tramite Vinted.",
-    ].join("\n");
-
-    const wallapop = [
-      viewingEntry.title,
-      "",
-      `Prezzo: ${viewingEntry.price} EUR`,
-      `Categoria: ${viewingEntry.category}`,
-      `Condizioni: ${viewingEntry.condition}`,
-      `Taglia: ${viewingEntry.size}`,
-      "",
-      viewingEntry.description,
-      "",
-      "Consegna a mano o spedizione disponibile.",
-    ].join("\n");
-
-    return { vinted, wallapop };
-  }, [viewingEntry]);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-8">
@@ -640,42 +631,6 @@ export default function Home() {
             ))}
           </div>
 
-          {platformTexts && (
-            <div className="mt-6 grid gap-4 lg:grid-cols-2">
-              <article className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-3">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-bold text-[var(--text)]">Testo pronto per Vinted</h3>
-                  <button
-                    type="button"
-                    onClick={() => copyField("platform-vinted", platformTexts.vinted)}
-                    className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)]"
-                  >
-                    {copiedField === "platform-vinted" ? "Copiato" : "Copia"}
-                  </button>
-                </div>
-                <pre className="whitespace-pre-wrap break-words text-xs text-[var(--text)]">
-                  {platformTexts.vinted}
-                </pre>
-              </article>
-
-              <article className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-3">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-bold text-[var(--text)]">Testo pronto per Wallapop</h3>
-                  <button
-                    type="button"
-                    onClick={() => copyField("platform-wallapop", platformTexts.wallapop)}
-                    className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)]"
-                  >
-                    {copiedField === "platform-wallapop" ? "Copiato" : "Copia"}
-                  </button>
-                </div>
-                <pre className="whitespace-pre-wrap break-words text-xs text-[var(--text)]">
-                  {platformTexts.wallapop}
-                </pre>
-              </article>
-            </div>
-          )}
-
           <div className="mt-6 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-3">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-sm font-bold text-[var(--text)]">Immagini pronte per upload</h3>
@@ -736,6 +691,18 @@ export default function Home() {
             )}
           </div>
         </section>
+      )}
+
+      {showBackToTop && (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-5 right-5 z-40 rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-4 py-2 text-xs font-semibold text-[var(--text)] shadow-md transition hover:bg-[var(--surface)]"
+          aria-label="Torna in cima"
+          title="Return to top"
+        >
+          Return to top
+        </button>
       )}
     </main>
   );
