@@ -39,8 +39,8 @@ const translations = {
     heroSubtitle:
       "Create, save, and organize sale ads with multiple images, then copy content wherever you need.",
     language: "Language",
-    listingNew: "New ad",
-    listingEdit: "Edit ad",
+    listingNew: "New sale",
+    listingEdit: "Edit sale",
     editing: "Editing",
     title: "Title",
     titlePlaceholder: "Example: Vintage denim jacket",
@@ -49,26 +49,27 @@ const translations = {
     size: "Size",
     price: "Price (EUR)",
     images: "Images (max 10)",
-    imagesHintCreate: "At least one image is required to create an ad.",
+    imagesHintCreate: "At least one image is required to create a sale.",
     imagesHintEdit: "Keep/remove existing images and add new ones.",
     description: "Description",
     descriptionPlaceholder: "Describe condition, defects, and fit",
     saving: "Saving...",
     saveChanges: "Save changes",
-    uploadListing: "Save ad",
+    uploadListing: "Save sale",
     reset: "Reset",
-    preview: "Ad preview",
+    preview: "Sale preview",
     selectedImages: "Selected images",
     saveStatus: "Save status",
-    savedListings: "Saved ads",
-    noListings: "No saved ads yet.",
-    items: "items",
+    savedListings: "Saved sales",
+    noListings: "No saved sales yet.",
+    itemSingular: "item",
+    itemPlural: "items",
     photos: "Photos",
     updatedAt: "Updated",
     view: "View",
     edit: "Edit",
     delete: "Delete",
-    details: "Ad details",
+    details: "Sale details",
     close: "Close",
     copy: "Copy",
     copied: "Copied",
@@ -81,14 +82,14 @@ const translations = {
     download: "Download",
     backToTop: "Back to top",
     copyFailed: "Copy failed. Check browser permissions.",
-    loadFailed: "Unable to load saved ads.",
+    loadFailed: "Unable to load saved sales.",
     saveFailed: "Error while saving.",
     deleteFailed: "Error while deleting.",
     unexpectedError: "Unexpected error.",
-    deleteConfirm: "Do you really want to delete this ad?",
-    updatedSuccess: "Ad updated successfully.",
-    savedSuccess: "Ad saved successfully.",
-    deletedSuccess: "Ad deleted successfully.",
+    deleteConfirm: "Do you really want to delete this sale?",
+    updatedSuccess: "Sale updated successfully.",
+    savedSuccess: "Sale saved successfully.",
+    deletedSuccess: "Sale deleted successfully.",
     noImageSelected: "No image selected",
     productTitleFallback: "Product title",
     productDescriptionFallback: "The product description will appear here.",
@@ -122,7 +123,8 @@ const translations = {
     saveStatus: "Stato salvataggio",
     savedListings: "Annunci salvati",
     noListings: "Nessun annuncio ancora salvato.",
-    items: "elementi",
+    itemSingular: "elemento",
+    itemPlural: "elementi",
     photos: "Foto",
     updatedAt: "Aggiornato",
     view: "Visualizza",
@@ -336,6 +338,8 @@ export default function Home() {
     () => listings.find((entry) => entry.id === viewingId) ?? null,
     [listings, viewingId]
   );
+  const listingCountLabel =
+    listings.length === 1 ? t.itemSingular : t.itemPlural;
 
   const canSubmit = useMemo(() => {
     const base = form.title.trim() && form.price.trim() && form.description.trim();
@@ -557,7 +561,18 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-2 py-1">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">{t.language}</span>
+            <span
+              className="text-[var(--muted)]"
+              title={t.language}
+              aria-label={t.language}
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M3 12h18" />
+                <path d="M12 3c3 3 3 15 0 18" />
+                <path d="M12 3c-3 3-3 15 0 18" />
+              </svg>
+            </span>
             <button
               type="button"
               onClick={() => setLocale("en")}
@@ -784,7 +799,7 @@ export default function Home() {
       <section className="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-5 shadow-sm sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-bold">{t.savedListings}</h2>
-          <span className="rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-[var(--text)]">{listings.length} {t.items}</span>
+          <span className="rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-[var(--text)]">{listings.length} {listingCountLabel}</span>
         </div>
 
         {listings.length === 0 ? (
