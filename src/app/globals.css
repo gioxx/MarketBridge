@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+:root {
+  --bg-top: #fdf2e7;
+  --bg-bottom: #fffdf8;
+  --card: #ffffff;
+  --surface: #f8fafc;
+  --surface-2: #ffffff;
+  --brand: #0f766e;
+  --brand-dark: #115e59;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --line: #d1d5db;
+  --danger-soft: #fef2f2;
+  --danger-line: #fecaca;
+  --danger-text: #b91c1c;
+  --logo-pattern-opacity: 0.045;
+  --logo-pattern-size: 230px;
+}
+
+:root.dark {
+  --bg-top: #0b1220;
+  --bg-bottom: #111827;
+  --card: #111827;
+  --surface: #1f2937;
+  --surface-2: #0f172a;
+  --brand: #14b8a6;
+  --brand-dark: #0d9488;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --line: #374151;
+  --danger-soft: #3a1618;
+  --danger-line: #7f1d1d;
+  --danger-text: #fca5a5;
+  --logo-pattern-opacity: 0.07;
+  --logo-pattern-size: 255px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(160deg, var(--bg-top) 0%, var(--bg-bottom) 45%, #eef6f5 100%);
+  color: var(--text);
+  font-family: "Trebuchet MS", "Gill Sans", sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -18%;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("/marketbridge-logo.svg");
+  background-repeat: repeat;
+  background-size: var(--logo-pattern-size) var(--logo-pattern-size);
+  opacity: var(--logo-pattern-opacity);
+  transform: rotate(-13deg);
+  transform-origin: center;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+.input {
+  @apply mt-1 w-full rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none transition;
+}
+
+.input:focus {
+  @apply ring-2 ring-teal-600/20 border-teal-700;
+}
+
+.label {
+  @apply text-sm font-semibold text-[var(--text)];
+}
