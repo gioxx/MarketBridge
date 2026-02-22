@@ -26,6 +26,7 @@ fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
 const db = new Database(dbPath);
 db.pragma("journal_mode = WAL");
+db.pragma("busy_timeout = 30000");
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS listings (
@@ -37,6 +38,7 @@ db.exec(`
     price REAL NOT NULL,
     description TEXT NOT NULL,
     image_file_name TEXT NOT NULL,
+    image_file_names TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
   )
@@ -45,8 +47,10 @@ db.exec(`
 const columns = db.prepare("PRAGMA table_info(listings)").all() as Array<{ name: string }>;
 const hasImageFileNames = columns.some((column) => column.name === "image_file_names");
 if (!hasImageFileNames) {
+  let shouldBackfill = false;
   try {
     db.exec("ALTER TABLE listings ADD COLUMN image_file_names TEXT");
+    shouldBackfill = true;
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     // Build/runtime can evaluate this module concurrently; second ALTER may race.
@@ -54,7 +58,12 @@ if (!hasImageFileNames) {
       throw error;
     }
   }
-  db.exec("UPDATE listings SET image_file_names = json_array(image_file_name) WHERE image_file_name IS NOT NULL");
+
+  if (shouldBackfill) {
+    db.exec(
+      "UPDATE listings SET image_file_names = json_array(image_file_name) WHERE image_file_name IS NOT NULL"
+    );
+  }
 }
 
 type ListingRow = {
