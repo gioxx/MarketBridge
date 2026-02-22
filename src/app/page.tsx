@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import packageJson from "../../package.json";
 
 type Locale = "en" | "it";
 type Condition = "NEW" | "LIKE_NEW" | "GOOD" | "FAIR";
@@ -94,6 +95,11 @@ const translations = {
     productTitleFallback: "Product title",
     productDescriptionFallback: "The product description will appear here.",
     themeChange: "Change theme",
+    footerRepo: "GitHub repository",
+    footerTagline:
+      "Create your sale ad once, keep it organized, and reuse it quickly across marketplaces.",
+    footerIconCredit: "Icon credit",
+    footerIconSource: "Shopping Bags icon from SVG Repo",
   },
   it: {
     heroTitle: "Prepara annunci una volta, pubblica ovunque",
@@ -155,6 +161,11 @@ const translations = {
     productTitleFallback: "Titolo prodotto",
     productDescriptionFallback: "La descrizione del prodotto apparirà qui.",
     themeChange: "Cambia tema",
+    footerRepo: "Repository GitHub",
+    footerTagline:
+      "Crea il tuo annuncio di vendita una volta, tienilo organizzato e riusalo velocemente sui marketplace.",
+    footerIconCredit: "Credito icona",
+    footerIconSource: "Icona Shopping Bags da SVG Repo",
   },
 } as const;
 
@@ -981,6 +992,34 @@ export default function Home() {
           </svg>
         </button>
       )}
+
+      <footer className="mt-4 rounded-2xl border border-[var(--line)] bg-[var(--card)] px-4 py-4 text-xs text-[var(--muted)] sm:px-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            <span className="font-semibold text-[var(--text)]">MarketBridge</span> · v{packageJson.version}
+          </p>
+          <a
+            href="https://github.com/gioxx/MarketBridge"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 font-semibold text-[var(--text)] underline underline-offset-2"
+          >
+            {t.footerRepo}
+          </a>
+        </div>
+        <p className="mt-2">{t.footerTagline}</p>
+        <p className="mt-1">
+          {t.footerIconCredit}:{" "}
+          <a
+            href="https://www.svgrepo.com/svg/402674/shopping-bags"
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-2 text-[var(--text)]"
+          >
+            {t.footerIconSource}
+          </a>
+        </p>
+      </footer>
     </main>
   );
 }

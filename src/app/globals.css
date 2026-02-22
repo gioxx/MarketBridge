@@ -15,7 +15,7 @@
   --danger-line: #fecaca;
   --danger-text: #b91c1c;
   --logo-pattern-opacity: 0.055;
-  --logo-pattern-size: 130px;
+  --logo-pattern-size: 185px;
 }
 
 :root.dark {
@@ -33,7 +33,7 @@
   --danger-line: #7f1d1d;
   --danger-text: #fca5a5;
   --logo-pattern-opacity: 0.085;
-  --logo-pattern-size: 140px;
+  --logo-pattern-size: 200px;
 }
 
 * {
