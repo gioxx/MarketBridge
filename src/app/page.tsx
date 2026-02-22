@@ -543,75 +543,77 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-8">
-      <header className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
-          {/* Replace this SVG anytime with your official brand asset. */}
-          <img
-            src="/marketbridge-logo.svg"
-            alt="MarketBridge logo"
-            className="mt-1 h-11 w-11 rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-1.5"
-          />
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">MarketBridge</p>
-            <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{t.heroTitle}</h1>
-            <p className="mt-2 max-w-2xl text-sm text-[var(--muted)] sm:text-base">
-              {t.heroSubtitle}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-2 py-1">
-            <span
-              className="text-[var(--muted)]"
-              title={t.language}
-              aria-label={t.language}
-            >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M3 12h18" />
-                <path d="M12 3c3 3 3 15 0 18" />
-                <path d="M12 3c-3 3-3 15 0 18" />
-              </svg>
-            </span>
-            <button
-              type="button"
-              onClick={() => setLocale("en")}
-              className={`rounded px-1.5 py-0.5 text-xs font-semibold ${locale === "en" ? "bg-[var(--surface)] text-[var(--text)]" : "text-[var(--muted)]"}`}
-            >
-              EN
-            </button>
-            <button
-              type="button"
-              onClick={() => setLocale("it")}
-              className={`rounded px-1.5 py-0.5 text-xs font-semibold ${locale === "it" ? "bg-[var(--surface)] text-[var(--text)]" : "text-[var(--muted)]"}`}
-            >
-              IT
-            </button>
+      <header className="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-3">
+            <img
+              src="/marketbridge-logo.svg"
+              alt="MarketBridge logo"
+              className="mt-1 h-14 w-14 rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-1.5 sm:h-16 sm:w-16"
+            />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">MarketBridge</p>
+              <h1 className="mt-2 text-2xl font-bold sm:text-4xl">{t.heroTitle}</h1>
+              <p className="mt-2 max-w-2xl text-sm text-[var(--muted)] sm:text-base">
+                {t.heroSubtitle}
+              </p>
+            </div>
           </div>
 
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="rounded-full border border-[var(--line)] bg-[var(--surface-2)] p-2 text-[var(--text)] transition hover:bg-[var(--surface)]"
-            title={t.themeChange}
-            aria-label={t.themeChange}
-          >
-            {themePreference === "system" ? (
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <rect x="3" y="4" width="18" height="12" rx="2" />
-                <path d="M8 20h8M12 16v4" />
-              </svg>
-            ) : resolvedTheme === "dark" ? (
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M12 3v2m0 14v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M3 12h2m14 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4" />
-                <circle cx="12" cy="12" r="4" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z" />
-              </svg>
-            )}
-          </button>
+          <div className="flex items-center justify-end gap-2">
+            <div className="flex items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-2 py-1">
+              <span
+                className="text-[var(--muted)]"
+                title={t.language}
+                aria-label={t.language}
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M3 12h18" />
+                  <path d="M12 3c3 3 3 15 0 18" />
+                  <path d="M12 3c-3 3-3 15 0 18" />
+                </svg>
+              </span>
+              <button
+                type="button"
+                onClick={() => setLocale("en")}
+                className={`rounded px-1.5 py-0.5 text-xs font-semibold ${locale === "en" ? "bg-[var(--surface)] text-[var(--text)]" : "text-[var(--muted)]"}`}
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocale("it")}
+                className={`rounded px-1.5 py-0.5 text-xs font-semibold ${locale === "it" ? "bg-[var(--surface)] text-[var(--text)]" : "text-[var(--muted)]"}`}
+              >
+                IT
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="rounded-full border border-[var(--line)] bg-[var(--surface-2)] p-2 text-[var(--text)] transition hover:bg-[var(--surface)]"
+              title={t.themeChange}
+              aria-label={t.themeChange}
+            >
+              {themePreference === "system" ? (
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <rect x="3" y="4" width="18" height="12" rx="2" />
+                  <path d="M8 20h8M12 16v4" />
+                </svg>
+              ) : resolvedTheme === "dark" ? (
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M12 3v2m0 14v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M3 12h2m14 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4" />
+                  <circle cx="12" cy="12" r="4" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
       </header>
 
