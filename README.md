@@ -71,6 +71,65 @@ Ready-to-use images are also available:
 - `ghcr.io/gioxx/marketbridge:latest`
 - `gfsolone/marketbridge:latest`
 
+### Example: `docker run` (GHCR)
+
+```bash
+docker run -d \
+  --name marketbridge \
+  -p 3001:3000 \
+  -e NODE_ENV=production \
+  -e NEXT_TELEMETRY_DISABLED=1 \
+  -e SQLITE_PATH=/app/data/marketbridge.db \
+  -v marketbridge_data:/app/data \
+  --restart unless-stopped \
+  ghcr.io/gioxx/marketbridge:latest
+```
+
+### Example: `docker run` (Docker Hub)
+
+```bash
+docker run -d \
+  --name marketbridge \
+  -p 3001:3000 \
+  -e NODE_ENV=production \
+  -e NEXT_TELEMETRY_DISABLED=1 \
+  -e SQLITE_PATH=/app/data/marketbridge.db \
+  -v marketbridge_data:/app/data \
+  --restart unless-stopped \
+  gfsolone/marketbridge:latest
+```
+
+### Example: `docker compose` (use pre-built image)
+
+```yaml
+services:
+  marketbridge:
+    container_name: marketbridge
+    image: ghcr.io/gioxx/marketbridge:latest
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      PORT: "3000"
+      SQLITE_PATH: /app/data/marketbridge.db
+      # Optional dangerous action:
+      # MARKETBRIDGE_ENABLE_PURGE_ALL: "1"
+    ports:
+      - "3001:3000"
+    volumes:
+      - data:/app/data
+    restart: unless-stopped
+
+volumes:
+  data:
+    name: marketbridge_data
+```
+
+You can switch to Docker Hub by replacing:
+
+- `image: ghcr.io/gioxx/marketbridge:latest`
+with:
+- `image: gfsolone/marketbridge:latest`
+
 ## Environment Configuration
 
 Supported variables:
