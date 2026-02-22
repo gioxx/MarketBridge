@@ -60,6 +60,13 @@ export const en = {
   productTitleFallback: "Product title",
   productDescriptionFallback: "The product description will appear here.",
   themeChange: "Change theme",
+  exportBackup: "Export backup",
+  importBackup: "Import backup",
+  exportingBackup: "Exporting...",
+  importingBackup: "Importing...",
+  backupExportFailed: "Backup export failed.",
+  backupImportFailed: "Backup import failed.",
+  backupImportedSuccess: "Backup imported successfully.",
   footerTagline:
     "Create your sale ad once, keep it organized, and reuse it quickly across marketplaces.",
   footerIconCredit: "Project Icon",

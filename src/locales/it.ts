@@ -60,6 +60,13 @@ export const it = {
   productTitleFallback: "Titolo prodotto",
   productDescriptionFallback: "La descrizione del prodotto apparirà qui.",
   themeChange: "Cambia tema",
+  exportBackup: "Esporta backup",
+  importBackup: "Importa backup",
+  exportingBackup: "Esportazione...",
+  importingBackup: "Importazione...",
+  backupExportFailed: "Esportazione backup non riuscita.",
+  backupImportFailed: "Importazione backup non riuscita.",
+  backupImportedSuccess: "Backup importato con successo.",
   footerTagline:
     "Crea il tuo annuncio di vendita una volta, tienilo organizzato e riusalo velocemente sui marketplace.",
   footerIconCredit: "Per l'icona",

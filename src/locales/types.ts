@@ -59,6 +59,13 @@ export type Translations = {
   productTitleFallback: string;
   productDescriptionFallback: string;
   themeChange: string;
+  exportBackup: string;
+  importBackup: string;
+  exportingBackup: string;
+  importingBackup: string;
+  backupExportFailed: string;
+  backupImportFailed: string;
+  backupImportedSuccess: string;
   footerTagline: string;
   footerIconCredit: string;
   footerIconSource: string;

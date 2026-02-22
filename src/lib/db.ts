@@ -18,6 +18,7 @@ export type ListingRecord = {
 };
 
 type ListingInput = Omit<ListingRecord, "id" | "createdAt" | "updatedAt">;
+export type ListingRestoreInput = Omit<ListingRecord, "id">;
 
 const dbPath = process.env.SQLITE_PATH ?? path.join(process.cwd(), "data", "marketbridge.db");
 
@@ -198,4 +199,37 @@ export const deleteListing = (id: number): boolean => {
   const stmt = db.prepare("DELETE FROM listings WHERE id = ?");
   const result = stmt.run(id);
   return result.changes > 0;
+};
+
+export const replaceAllListings = (entries: ListingRestoreInput[]): void => {
+  const insert = db.prepare(
+    `INSERT INTO listings (title, category, condition, size, price, description, image_file_name, image_file_names, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  );
+  const clear = db.prepare("DELETE FROM listings");
+
+  const runReplace = db.transaction((nextEntries: ListingRestoreInput[]) => {
+    clear.run();
+    for (const entry of nextEntries) {
+      const imageFileNames = normalizeImageNames(entry.imageFileNames);
+      if (imageFileNames.length === 0) {
+        throw new Error("Listing must include at least one valid image.");
+      }
+
+      insert.run(
+        entry.title,
+        entry.category,
+        entry.condition,
+        entry.size,
+        entry.price,
+        entry.description,
+        imageFileNames[0] ?? "",
+        JSON.stringify(imageFileNames),
+        entry.createdAt,
+        entry.updatedAt
+      );
+    }
+  });
+
+  runReplace(entries);
 };

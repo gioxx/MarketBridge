@@ -64,3 +64,54 @@ export const deleteImage = (fileName: string): void => {
 export const isSafeImageName = (value: string): boolean => {
   return /^[a-z0-9][a-z0-9-]*-[a-f0-9-]+\.(jpg|png|webp)$/.test(value);
 };
+
+export const listImageNames = (): string[] => {
+  return fs.readdirSync(uploadsDir).filter((value) => isSafeImageName(value));
+};
+
+export const readImageBuffer = (fileName: string): Buffer | null => {
+  if (!isSafeImageName(fileName)) {
+    return null;
+  }
+
+  const fullPath = path.join(uploadsDir, fileName);
+  if (!fs.existsSync(fullPath)) {
+    return null;
+  }
+
+  return fs.readFileSync(fullPath);
+};
+
+export const replaceAllImages = (entries: Array<{ fileName: string; buffer: Buffer }>): void => {
+  if (entries.some((entry) => !isSafeImageName(entry.fileName))) {
+    throw new Error("Invalid image file name in backup.");
+  }
+
+  const uniqueEntries = Array.from(
+    new Map(
+      entries.map((entry) => [entry.fileName, entry] as const)
+    ).values()
+  );
+
+  const stagingDir = path.join(process.cwd(), "data", `uploads-staging-${randomUUID()}`);
+  fs.mkdirSync(stagingDir, { recursive: true });
+
+  try {
+    for (const { fileName, buffer } of uniqueEntries) {
+      fs.writeFileSync(path.join(stagingDir, fileName), buffer);
+    }
+
+    for (const currentName of listImageNames()) {
+      fs.unlinkSync(path.join(uploadsDir, currentName));
+    }
+
+    const stagedFiles = fs.readdirSync(stagingDir);
+    for (const stagedFile of stagedFiles) {
+      fs.renameSync(path.join(stagingDir, stagedFile), path.join(uploadsDir, stagedFile));
+    }
+  } finally {
+    if (fs.existsSync(stagingDir)) {
+      fs.rmSync(stagingDir, { recursive: true, force: true });
+    }
+  }
+};

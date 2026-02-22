@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { translations, type Locale } from "@/locales";
 import packageJson from "../../package.json";
 
@@ -138,6 +138,9 @@ export default function Home() {
   const [locale, setLocale] = useState<Locale>("en");
   const [themePreference, setThemePreference] = useState<ThemePreference>("system");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
+  const [exportingBackup, setExportingBackup] = useState(false);
+  const [importingBackup, setImportingBackup] = useState(false);
+  const backupInputRef = useRef<HTMLInputElement | null>(null);
   const t = translations[locale];
 
   useEffect(() => {
@@ -416,6 +419,84 @@ export default function Home() {
       }, 1500);
     } catch {
       setError(t.copyFailed);
+    }
+  };
+
+  const exportBackup = async () => {
+    if (exportingBackup) {
+      return;
+    }
+
+    setExportingBackup(true);
+    setError(null);
+    setDone(null);
+
+    try {
+      const response = await fetch("/api/backup/export", { cache: "no-store" });
+      if (!response.ok) {
+        const data = (await response.json()) as { error?: string };
+        throw new Error(data.error ?? t.backupExportFailed);
+      }
+
+      const blob = await response.blob();
+      const disposition = response.headers.get("content-disposition") ?? "";
+      const fileNameMatch = disposition.match(/filename=\"([^\"]+)\"/i);
+      const fileName = fileNameMatch?.[1] ?? "marketbridge-backup.zip";
+      const downloadUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = downloadUrl;
+      anchor.download = fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(downloadUrl);
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : t.backupExportFailed;
+      setError(message);
+    } finally {
+      setExportingBackup(false);
+    }
+  };
+
+  const importBackup = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || importingBackup) {
+      return;
+    }
+
+    setImportingBackup(true);
+    setError(null);
+    setDone(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("backup", file);
+
+      const response = await fetch("/api/backup/import?mode=replace", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(data.error ?? t.backupImportFailed);
+      }
+
+      await fetchListings();
+      setEditingId(null);
+      setViewingId(null);
+      setSelectedFiles([]);
+      setKeptEditingImages([]);
+      setForm(initialForm);
+      setProgress(0);
+      setUploading(false);
+      setDone(t.backupImportedSuccess);
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : t.backupImportFailed;
+      setError(message);
+    } finally {
+      event.target.value = "";
+      setImportingBackup(false);
     }
   };
 
@@ -703,7 +784,32 @@ export default function Home() {
       <section className="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-5 shadow-sm sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-bold">{t.savedListings}</h2>
-          <span className="rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-[var(--text)]">{listings.length} {listingCountLabel}</span>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-[var(--text)]">{listings.length} {listingCountLabel}</span>
+            <button
+              type="button"
+              onClick={exportBackup}
+              disabled={exportingBackup || importingBackup}
+              className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {exportingBackup ? t.exportingBackup : t.exportBackup}
+            </button>
+            <button
+              type="button"
+              onClick={() => backupInputRef.current?.click()}
+              disabled={importingBackup || exportingBackup}
+              className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {importingBackup ? t.importingBackup : t.importBackup}
+            </button>
+            <input
+              ref={backupInputRef}
+              type="file"
+              accept=".zip,application/zip"
+              onChange={importBackup}
+              className="hidden"
+            />
+          </div>
         </div>
 
         {listings.length === 0 ? (
