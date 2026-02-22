@@ -544,23 +544,21 @@ export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-8">
       <header className="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-4 shadow-sm sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-start gap-3">
+        <div className="flex flex-col gap-4">
+          <div>
             <img
               src="/marketbridge-logo.svg"
               alt="MarketBridge logo"
-              className="mt-1 h-14 w-14 rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-1.5 sm:h-16 sm:w-16"
+              className="float-right ml-3 mt-1 h-16 w-16 sm:h-20 sm:w-20"
             />
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">MarketBridge</p>
-              <h1 className="mt-2 text-2xl font-bold sm:text-4xl">{t.heroTitle}</h1>
-              <p className="mt-2 max-w-2xl text-sm text-[var(--muted)] sm:text-base">
-                {t.heroSubtitle}
-              </p>
-            </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">MarketBridge</p>
+            <h1 className="mt-2 text-2xl font-bold sm:text-4xl">{t.heroTitle}</h1>
+            <p className="mt-2 max-w-3xl text-sm text-[var(--muted)] sm:text-base">
+              {t.heroSubtitle}
+            </p>
           </div>
 
-          <div className="flex items-center justify-end gap-2">
+          <div className="clear-both flex items-center justify-end gap-2">
             <div className="flex items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-2 py-1">
               <span
                 className="text-[var(--muted)]"
