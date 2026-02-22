@@ -31,8 +31,10 @@ type Listing = {
 
 type ThemePreference = "system" | "light" | "dark";
 type PreviewImageItem =
-  | { key: string; url: string; isNew: true; newIndex: number }
-  | { key: string; url: string; isNew: false; existingName: string };
+  | { key: string; objectUrl: string; isNew: true; newIndex: number }
+  | { key: string; isNew: false; existingName: string };
+
+const UPLOAD_PATH_PREFIX = "/api/uploads/";
 
 const translations = {
   en: {
@@ -224,16 +226,35 @@ const initialForm: FormState = {
   description: "",
 };
 
+const getImagePath = (fileName: string): string | null => {
+  if (!fileName || fileName.includes("/") || fileName.includes("\\") || fileName.includes("\0")) {
+    return null;
+  }
+  return `${UPLOAD_PATH_PREFIX}${encodeURIComponent(fileName)}`;
+};
+
 const safeImageSrc = (value: string): string | null => {
-  if (value.startsWith("blob:")) {
-    return value;
+  if (typeof window === "undefined") {
+    return null;
   }
 
-  if (value.startsWith("/api/uploads/")) {
-    return value;
-  }
+  try {
+    if (value.startsWith("blob:")) {
+      const blobUrl = new URL(value);
+      return blobUrl.protocol === "blob:" && blobUrl.origin === window.location.origin ? blobUrl.href : null;
+    }
 
-  return null;
+    const parsed = new URL(value, window.location.origin);
+    if (parsed.origin !== window.location.origin) {
+      return null;
+    }
+    if (!parsed.pathname.startsWith(UPLOAD_PATH_PREFIX)) {
+      return null;
+    }
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return null;
+  }
 };
 
 export default function Home() {
@@ -309,14 +330,13 @@ export default function Home() {
   const previewImageUrls = useMemo<PreviewImageItem[]>(() => {
     const localUrls: PreviewImageItem[] = selectedFiles.map((file, index) => ({
       key: `new-${file.name}-${file.size}`,
-      url: URL.createObjectURL(file),
+      objectUrl: URL.createObjectURL(file),
       isNew: true,
       newIndex: index,
     }));
 
     const existingUrls: PreviewImageItem[] = keptEditingImages.map((name) => ({
       key: `existing-${name}`,
-      url: `/api/uploads/${encodeURIComponent(name)}`,
       isNew: false,
       existingName: name,
     }));
@@ -327,8 +347,8 @@ export default function Home() {
   useEffect(() => {
     return () => {
       for (const item of previewImageUrls) {
-        if (item.isNew && item.url.startsWith("blob:")) {
-          URL.revokeObjectURL(item.url);
+        if (item.isNew && item.objectUrl.startsWith("blob:")) {
+          URL.revokeObjectURL(item.objectUrl);
         }
       }
     };
@@ -534,12 +554,15 @@ export default function Home() {
     }
   };
 
-  const getImagePath = (fileName: string) => `/api/uploads/${encodeURIComponent(fileName)}`;
   const getAbsoluteImageUrl = (fileName: string) => {
-    if (typeof window === "undefined") {
-      return getImagePath(fileName);
+    const imagePath = getImagePath(fileName);
+    if (!imagePath) {
+      return "";
     }
-    return `${window.location.origin}${getImagePath(fileName)}`;
+    if (typeof window === "undefined") {
+      return imagePath;
+    }
+    return `${window.location.origin}${imagePath}`;
   };
 
   const categoryLabel = (value: string) => {
@@ -749,42 +772,47 @@ export default function Home() {
             <div className="mt-4 rounded-md border border-dashed border-[var(--line)] bg-[var(--surface-2)] p-3">
               {previewImageUrls.length > 0 ? (
                 <div className="grid grid-cols-2 gap-2">
-                  {previewImageUrls.map((item, index) => (
-                    <div key={item.key} className="relative">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={safeImageSrc(item.url) ?? "/marketbridge-logo.svg"}
-                        alt={`Anteprima ${index + 1}`}
-                        className="h-24 w-full rounded-md object-cover"
-                      />
-                      {editingId && !item.isNew && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if ("existingName" in item) {
-                              removeExistingImage(item.existingName);
-                            }
-                          }}
-                          className="absolute right-1 top-1 rounded bg-[var(--surface-2)]/90 px-1.5 py-0.5 text-xs font-semibold text-[var(--danger-text)]"
-                        >
-                          x
-                        </button>
-                      )}
-                      {item.isNew && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if ("newIndex" in item) {
-                              removeNewImage(item.newIndex);
-                            }
-                          }}
-                          className="absolute right-1 top-1 rounded bg-[var(--surface-2)]/90 px-1.5 py-0.5 text-xs font-semibold text-[var(--danger-text)]"
-                        >
-                          x
-                        </button>
-                      )}
-                    </div>
-                  ))}
+                  {previewImageUrls.map((item, index) => {
+                    const candidateSrc = item.isNew ? item.objectUrl : getImagePath(item.existingName) ?? "";
+                    const previewSrc = safeImageSrc(candidateSrc) ?? "/marketbridge-logo.svg";
+
+                    return (
+                      <div key={item.key} className="relative">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={previewSrc}
+                          alt={`Anteprima ${index + 1}`}
+                          className="h-24 w-full rounded-md object-cover"
+                        />
+                        {editingId && !item.isNew && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if ("existingName" in item) {
+                                removeExistingImage(item.existingName);
+                              }
+                            }}
+                            className="absolute right-1 top-1 rounded bg-[var(--surface-2)]/90 px-1.5 py-0.5 text-xs font-semibold text-[var(--danger-text)]"
+                          >
+                            x
+                          </button>
+                        )}
+                        {item.isNew && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if ("newIndex" in item) {
+                                removeNewImage(item.newIndex);
+                              }
+                            }}
+                            className="absolute right-1 top-1 rounded bg-[var(--surface-2)]/90 px-1.5 py-0.5 text-xs font-semibold text-[var(--danger-text)]"
+                          >
+                            x
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <span className="text-sm text-[var(--muted)]">{t.noImageSelected}</span>
@@ -819,7 +847,8 @@ export default function Home() {
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             {listings.map((entry) => {
               const firstImage = entry.imageFileNames[0];
-              const imageUrl = firstImage ? `/api/uploads/${encodeURIComponent(firstImage)}` : null;
+              const imagePath = firstImage ? getImagePath(firstImage) : null;
+              const imageUrl = imagePath ? safeImageSrc(imagePath) : null;
 
               return (
                 <article key={entry.id} className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-4">
@@ -920,7 +949,10 @@ export default function Home() {
                 onClick={() =>
                   copyField(
                     "images-all-urls",
-                    viewingEntry.imageFileNames.map((fileName) => getAbsoluteImageUrl(fileName)).join("\n")
+                    viewingEntry.imageFileNames
+                      .map((fileName) => getAbsoluteImageUrl(fileName))
+                      .filter(Boolean)
+                      .join("\n")
                   )
                 }
                 className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)]"
@@ -935,12 +967,14 @@ export default function Home() {
               <div className="grid gap-3 sm:grid-cols-2">
                 {viewingEntry.imageFileNames.map((fileName, index) => {
                   const imagePath = getImagePath(fileName);
+                  const safePath = imagePath ? safeImageSrc(imagePath) : null;
+                  const absoluteImageUrl = getAbsoluteImageUrl(fileName);
 
                   return (
                     <article key={fileName} className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] p-2">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={safeImageSrc(imagePath) ?? "/marketbridge-logo.svg"}
+                        src={safePath ?? "/marketbridge-logo.svg"}
                         alt={`Immagine ${index + 1}`}
                         className="h-28 w-full rounded object-cover"
                       />
@@ -948,26 +982,31 @@ export default function Home() {
                       <div className="mt-2 flex flex-wrap gap-2">
                         <button
                           type="button"
-                          onClick={() => copyField(`image-url-${fileName}`, getAbsoluteImageUrl(fileName))}
+                          onClick={() => copyField(`image-url-${fileName}`, absoluteImageUrl)}
+                          disabled={!absoluteImageUrl}
                           className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-2 py-1 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface-2)]"
                         >
                           {copiedField === `image-url-${fileName}` ? t.copied : t.copyUrl}
                         </button>
-                        <a
-                          href={imagePath}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-2 py-1 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface-2)]"
-                        >
-                          {t.open}
-                        </a>
-                        <a
-                          href={imagePath}
-                          download={fileName}
-                          className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-2 py-1 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface-2)]"
-                        >
-                          {t.download}
-                        </a>
+                        {safePath ? (
+                          <>
+                            <a
+                              href={safePath}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-2 py-1 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface-2)]"
+                            >
+                              {t.open}
+                            </a>
+                            <a
+                              href={safePath}
+                              download={fileName}
+                              className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-2 py-1 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface-2)]"
+                            >
+                              {t.download}
+                            </a>
+                          </>
+                        ) : null}
                       </div>
                     </article>
                   );

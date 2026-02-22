@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import Database from "better-sqlite3";
+import { isSafeImageName } from "@/lib/uploads";
 
 export type ListingRecord = {
   id: number;
@@ -69,17 +70,21 @@ type ListingRow = {
   updated_at: string;
 };
 
+const normalizeImageNames = (values: string[]): string[] => {
+  return Array.from(new Set(values.filter((value) => isSafeImageName(value))));
+};
+
 const parseImageNames = (value: string | null, fallback: string): string[] => {
   if (value) {
     try {
       const parsed = JSON.parse(value) as unknown;
       if (Array.isArray(parsed)) {
-        return parsed.filter((item): item is string => typeof item === "string");
+        return normalizeImageNames(parsed.filter((item): item is string => typeof item === "string"));
       }
     } catch {}
   }
 
-  return fallback ? [fallback] : [];
+  return normalizeImageNames(fallback ? [fallback] : []);
 };
 
 const mapRow = (row: ListingRow): ListingRecord => ({
@@ -122,6 +127,10 @@ export const getListingById = (id: number): ListingRecord | null => {
 };
 
 export const createListing = (input: ListingInput): ListingRecord => {
+  const imageFileNames = normalizeImageNames(input.imageFileNames);
+  if (imageFileNames.length === 0) {
+    throw new Error("Listing must include at least one valid image.");
+  }
   const now = new Date().toISOString();
 
   const stmt = db.prepare(
@@ -136,8 +145,8 @@ export const createListing = (input: ListingInput): ListingRecord => {
     input.size,
     input.price,
     input.description,
-    input.imageFileNames[0] ?? "",
-    JSON.stringify(input.imageFileNames),
+    imageFileNames[0] ?? "",
+    JSON.stringify(imageFileNames),
     now,
     now
   );
@@ -146,6 +155,10 @@ export const createListing = (input: ListingInput): ListingRecord => {
 };
 
 export const updateListing = (id: number, input: ListingInput): ListingRecord | null => {
+  const imageFileNames = normalizeImageNames(input.imageFileNames);
+  if (imageFileNames.length === 0) {
+    throw new Error("Listing must include at least one valid image.");
+  }
   const now = new Date().toISOString();
   const stmt = db.prepare(
     `UPDATE listings
@@ -168,8 +181,8 @@ export const updateListing = (id: number, input: ListingInput): ListingRecord | 
     input.size,
     input.price,
     input.description,
-    input.imageFileNames[0] ?? "",
-    JSON.stringify(input.imageFileNames),
+    imageFileNames[0] ?? "",
+    JSON.stringify(imageFileNames),
     now,
     id
   );
