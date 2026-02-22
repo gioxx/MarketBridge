@@ -64,6 +64,13 @@ docker compose up --build
 
 Open: `http://localhost:3001`
 
+### Pre-built Docker Images
+
+Ready-to-use images are also available:
+
+- `ghcr.io/gioxx/marketbridge:latest`
+- `gfsolone/marketbridge:latest`
+
 ## Environment Configuration
 
 Supported variables:
