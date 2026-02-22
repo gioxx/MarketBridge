@@ -14,6 +14,8 @@
   --danger-soft: #fef2f2;
   --danger-line: #fecaca;
   --danger-text: #b91c1c;
+  --logo-pattern-opacity: 0.055;
+  --logo-pattern-size: 130px;
 }
 
 :root.dark {
@@ -30,6 +32,8 @@
   --danger-soft: #3a1618;
   --danger-line: #7f1d1d;
   --danger-text: #fca5a5;
+  --logo-pattern-opacity: 0.085;
+  --logo-pattern-size: 140px;
 }
 
 * {
@@ -42,6 +46,22 @@ body {
   background: linear-gradient(160deg, var(--bg-top) 0%, var(--bg-bottom) 45%, #eef6f5 100%);
   color: var(--text);
   font-family: "Trebuchet MS", "Gill Sans", sans-serif;
+  position: relative;
+  isolation: isolate;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -18%;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("/marketbridge-logo.svg");
+  background-repeat: repeat;
+  background-size: var(--logo-pattern-size) var(--logo-pattern-size);
+  opacity: var(--logo-pattern-opacity);
+  transform: rotate(-13deg);
+  transform-origin: center;
 }
 
 .input {
