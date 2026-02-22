@@ -47,14 +47,14 @@ body {
   color: var(--text);
   font-family: "Trebuchet MS", "Gill Sans", sans-serif;
   position: relative;
-  isolation: isolate;
+  overflow-x: hidden;
 }
 
 body::before {
   content: "";
   position: fixed;
   inset: -18%;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
   background-image: url("/marketbridge-logo.svg");
   background-repeat: repeat;
@@ -62,6 +62,11 @@ body::before {
   opacity: var(--logo-pattern-opacity);
   transform: rotate(-13deg);
   transform-origin: center;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
 }
 
 .input {
