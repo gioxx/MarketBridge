@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { translations, type Locale } from "@/locales";
 import packageJson from "../../package.json";
 
-type Locale = "en" | "it";
 type Condition = "NEW" | "LIKE_NEW" | "GOOD" | "FAIR";
 type Category = "WOMEN" | "MEN" | "KIDS" | "HOME";
 
@@ -35,141 +35,6 @@ type PreviewImageItem =
   | { key: string; isNew: false; existingName: string };
 
 const UPLOAD_PATH_PREFIX = "/api/uploads/";
-
-const translations = {
-  en: {
-    heroTitle: "Create your sale ad once, post it anywhere",
-    heroSubtitle:
-      "Create, save, and organize sale ads with multiple images, then copy content wherever you need.",
-    language: "Language",
-    listingNew: "New sale",
-    listingEdit: "Edit sale",
-    editing: "Editing",
-    title: "Title",
-    titlePlaceholder: "Example: Vintage denim jacket",
-    category: "Category",
-    condition: "Condition",
-    size: "Size",
-    price: "Price (EUR)",
-    images: "Images (max 10)",
-    imagesHintCreate: "At least one image is required to create a sale.",
-    imagesHintEdit: "Keep/remove existing images and add new ones.",
-    description: "Description",
-    descriptionPlaceholder: "Describe condition, defects, and fit",
-    saving: "Saving...",
-    saveChanges: "Save changes",
-    uploadListing: "Save sale",
-    reset: "Reset",
-    preview: "Sale preview",
-    selectedImages: "Selected images",
-    saveStatus: "Save status",
-    savedListings: "Saved sales",
-    noListings: "No saved sales yet.",
-    itemSingular: "item",
-    itemPlural: "items",
-    photos: "Photos",
-    updatedAt: "Updated",
-    view: "View",
-    edit: "Edit",
-    delete: "Delete",
-    details: "Sale details",
-    close: "Close",
-    copy: "Copy",
-    copied: "Copied",
-    readyImages: "Images ready for upload",
-    copyAllUrls: "Copy all URLs",
-    noImages: "No images available.",
-    image: "Image",
-    copyUrl: "Copy URL",
-    open: "Open",
-    download: "Download",
-    backToTop: "Back to top",
-    copyFailed: "Copy failed. Check browser permissions.",
-    loadFailed: "Unable to load saved sales.",
-    saveFailed: "Error while saving.",
-    deleteFailed: "Error while deleting.",
-    unexpectedError: "Unexpected error.",
-    deleteConfirm: "Do you really want to delete this sale?",
-    updatedSuccess: "Sale updated successfully.",
-    savedSuccess: "Sale saved successfully.",
-    deletedSuccess: "Sale deleted successfully.",
-    noImageSelected: "No image selected",
-    productTitleFallback: "Product title",
-    productDescriptionFallback: "The product description will appear here.",
-    themeChange: "Change theme",
-    footerRepo: "GitHub repository",
-    footerTagline:
-      "Create your sale ad once, keep it organized, and reuse it quickly across marketplaces.",
-    footerIconCredit: "Icon credit",
-    footerIconSource: "Shopping Bags icon from SVG Repo",
-  },
-  it: {
-    heroTitle: "Prepara annunci una volta, pubblica ovunque",
-    heroSubtitle:
-      "Crea, salva e organizza i tuoi annunci con immagini multiple, poi copia i contenuti dove ti serve.",
-    language: "Lingua",
-    listingNew: "Nuovo annuncio",
-    listingEdit: "Modifica annuncio",
-    editing: "Modifica",
-    title: "Titolo",
-    titlePlaceholder: "Esempio: Giacca denim vintage",
-    category: "Categoria",
-    condition: "Condizioni",
-    size: "Taglia",
-    price: "Prezzo (EUR)",
-    images: "Immagini (max 10)",
-    imagesHintCreate: "Serve almeno una foto per creare l'annuncio.",
-    imagesHintEdit: "Puoi tenere/rimuovere foto esistenti e aggiungerne di nuove.",
-    description: "Descrizione",
-    descriptionPlaceholder: "Descrivi stato, difetti e vestibilità",
-    saving: "Salvataggio...",
-    saveChanges: "Salva modifiche",
-    uploadListing: "Carica annuncio",
-    reset: "Azzera",
-    preview: "Anteprima annuncio",
-    selectedImages: "Immagini selezionate",
-    saveStatus: "Stato salvataggio",
-    savedListings: "Annunci salvati",
-    noListings: "Nessun annuncio ancora salvato.",
-    itemSingular: "elemento",
-    itemPlural: "elementi",
-    photos: "Foto",
-    updatedAt: "Aggiornato",
-    view: "Visualizza",
-    edit: "Modifica",
-    delete: "Elimina",
-    details: "Dettaglio annuncio",
-    close: "Chiudi",
-    copy: "Copia",
-    copied: "Copiato",
-    readyImages: "Immagini pronte per upload",
-    copyAllUrls: "Copia tutti gli URL",
-    noImages: "Nessuna immagine disponibile.",
-    image: "Immagine",
-    copyUrl: "Copia URL",
-    open: "Apri",
-    download: "Scarica",
-    backToTop: "Torna in cima",
-    copyFailed: "Copia non riuscita. Controlla i permessi del browser.",
-    loadFailed: "Impossibile caricare gli annunci salvati.",
-    saveFailed: "Errore durante il salvataggio.",
-    deleteFailed: "Errore durante l'eliminazione.",
-    unexpectedError: "Errore imprevisto.",
-    deleteConfirm: "Vuoi davvero eliminare questo annuncio?",
-    updatedSuccess: "Annuncio aggiornato con successo.",
-    savedSuccess: "Annuncio salvato con successo.",
-    deletedSuccess: "Annuncio eliminato con successo.",
-    noImageSelected: "Nessuna immagine selezionata",
-    productTitleFallback: "Titolo prodotto",
-    productDescriptionFallback: "La descrizione del prodotto apparirà qui.",
-    themeChange: "Cambia tema",
-    footerRepo: "Repository GitHub",
-    footerTagline:
-      "Crea il tuo annuncio di vendita una volta, tienilo organizzato e riusalo velocemente sui marketplace.",
-    footerIconCredit: "Credito icona",
-    footerIconSource: "Icona Shopping Bags da SVG Repo",
-  },
-} as const;
 
 const categoryLabels: Record<Locale, Record<Category, string>> = {
   en: { WOMEN: "Women", MEN: "Men", KIDS: "Kids", HOME: "Home" },
@@ -1041,9 +906,13 @@ export default function Home() {
             href="https://github.com/gioxx/MarketBridge"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1 font-semibold text-[var(--text)] underline underline-offset-2"
+            aria-label="GitHub"
+            title="GitHub"
+            className="inline-flex items-center justify-center rounded-md p-1 text-[var(--text)] transition hover:bg-[var(--surface)]"
           >
-            {t.footerRepo}
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+              <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56l-.02-1.97c-3.2.69-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.33.95.1-.74.4-1.24.72-1.53-2.56-.29-5.26-1.28-5.26-5.71 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11.06 11.06 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.59.23 2.76.11 3.05.73.81 1.18 1.84 1.18 3.1 0 4.44-2.71 5.42-5.29 5.7.41.35.78 1.04.78 2.1l-.01 3.11c0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
+            </svg>
           </a>
         </div>
         <p className="mt-2">{t.footerTagline}</p>
