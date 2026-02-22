@@ -71,7 +71,7 @@ export async function GET() {
     }
 
     const archive = await zip.generateAsync({
-      type: "uint8array",
+      type: "arraybuffer",
       compression: "DEFLATE",
       compressionOptions: { level: 6 },
     });
