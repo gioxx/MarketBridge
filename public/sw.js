@@ -1,4 +1,4 @@
-const CACHE_NAME = "marketbridge-v1";
+const CACHE_NAME = "marketbridge-v2";
 const APP_SHELL = [
   "/",
   "/manifest.webmanifest",
@@ -29,6 +29,11 @@ self.addEventListener("fetch", (event) => {
 
   const requestUrl = new URL(event.request.url);
   if (requestUrl.origin !== self.location.origin) {
+    return;
+  }
+
+  // Never cache API responses. Listing data must always reflect the live DB.
+  if (requestUrl.pathname.startsWith("/api/")) {
     return;
   }
 
