@@ -85,4 +85,13 @@ export const it = {
     "Crea il tuo annuncio di vendita una volta, tienilo organizzato e riusalo velocemente sui marketplace.",
   footerIconCredit: "Per l'icona",
   footerIconSource: "Shopping Bags (SVG Repo)",
+  publishTitle: "Pubblica sul marketplace",
+  publishOn: "Pubblica su",
+  publishOpenPage: "Apri pagina nuovo annuncio",
+  publishNote: "Copia ogni campo, poi apri la pagina della piattaforma e incolla. Le foto vanno caricate manualmente.",
+  publishFieldCategory: "Categoria",
+  publishFieldCondition: "Condizione",
+  publishFieldSize: "Taglia",
+  publishPhotoUploadNote: "Scarica le immagini dalla sezione qui sotto, poi caricale sulla piattaforma.",
+  publishClose: "Chiudi",
 } as const satisfies Translations;

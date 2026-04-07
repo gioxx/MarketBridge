@@ -83,4 +83,13 @@ export type Translations = {
   footerTagline: string;
   footerIconCredit: string;
   footerIconSource: string;
+  publishTitle: string;
+  publishOn: string;
+  publishOpenPage: string;
+  publishNote: string;
+  publishFieldCategory: string;
+  publishFieldCondition: string;
+  publishFieldSize: string;
+  publishPhotoUploadNote: string;
+  publishClose: string;
 };

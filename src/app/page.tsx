@@ -5,7 +5,7 @@ import { config } from "@fortawesome/fontawesome-svg-core";
 import { faArrowsRotate, faDesktop, faGlobe, faMoon, faSun } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
-import { translations, type Locale } from "@/locales";
+import { translations, type Locale, type Translations } from "@/locales";
 import packageJson from "../../package.json";
 
 config.autoAddCss = false;
@@ -129,6 +129,134 @@ const safeImageSrc = (value: string): string | null => {
   }
 };
 
+type Platform = "vinted" | "wallapop";
+
+const PLATFORM_CONFIG: Record<
+  Platform,
+  {
+    label: string;
+    newListingUrl: string;
+    conditionMap: Record<Condition, string>;
+    categoryMap: Record<Category, string>;
+  }
+> = {
+  vinted: {
+    label: "Vinted",
+    newListingUrl: "https://www.vinted.it/items/new",
+    conditionMap: {
+      NEW: "Nuovo con etichetta",
+      LIKE_NEW: "Nuovo senza etichetta",
+      GOOD: "Ottimo",
+      FAIR: "Buono",
+    },
+    categoryMap: {
+      WOMEN: "Donna",
+      MEN: "Uomo",
+      KIDS: "Bambini",
+      HOME: "Casa",
+    },
+  },
+  wallapop: {
+    label: "Wallapop",
+    newListingUrl: "https://it.wallapop.com/app/upload",
+    conditionMap: {
+      NEW: "Nuovo",
+      LIKE_NEW: "Come nuovo",
+      GOOD: "In buone condizioni",
+      FAIR: "In discrete condizioni",
+    },
+    categoryMap: {
+      WOMEN: "Moda e accessori",
+      MEN: "Moda e accessori",
+      KIDS: "Bambini e neonati",
+      HOME: "Casa e giardino",
+    },
+  },
+};
+
+function PublishWizardPanel({
+  platform,
+  entry,
+  copiedField,
+  copyField,
+  onClose,
+  t,
+}: {
+  platform: Platform;
+  entry: Listing;
+  copiedField: string | null;
+  copyField: (key: string, value: string) => Promise<void>;
+  onClose: () => void;
+  t: Translations;
+}) {
+  const cfg = PLATFORM_CONFIG[platform];
+  const cat = normalizeCategory(entry.category);
+  const cond = normalizeCondition(entry.condition);
+  const mappedCategory = cat ? cfg.categoryMap[cat] : entry.category;
+  const mappedCondition = cond ? cfg.conditionMap[cond] : entry.condition;
+
+  const fields: Array<{ key: string; label: string; value: string }> = [
+    { key: `pub-title-${platform}`, label: t.title, value: entry.title },
+    { key: `pub-desc-${platform}`, label: t.description, value: entry.description },
+    { key: `pub-category-${platform}`, label: t.publishFieldCategory, value: mappedCategory },
+    { key: `pub-condition-${platform}`, label: t.publishFieldCondition, value: mappedCondition },
+    { key: `pub-size-${platform}`, label: t.publishFieldSize, value: entry.size },
+    { key: `pub-price-${platform}`, label: t.price, value: `${entry.price}` },
+  ];
+
+  return (
+    <div className="mt-4 rounded-xl border-2 border-teal-600/40 bg-[var(--surface)] p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-sm font-bold text-teal-700 dark:text-teal-300">
+          {t.publishTitle} — {cfg.label}
+        </h3>
+        <div className="flex items-center gap-2">
+          <a
+            href={cfg.newListingUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-md border border-teal-600 bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700"
+          >
+            {t.publishOpenPage}
+          </a>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)]"
+          >
+            {t.publishClose}
+          </button>
+        </div>
+      </div>
+
+      <p className="mb-3 text-xs text-[var(--muted)]">{t.publishNote}</p>
+
+      <div className="grid gap-2">
+        {fields.map((field) => (
+          <div
+            key={field.key}
+            className="flex flex-col gap-2 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-3 sm:flex-row sm:items-start sm:justify-between"
+          >
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">{field.label}</p>
+              <p className="mt-1 whitespace-pre-wrap break-words text-sm text-[var(--text)]">{field.value}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => copyField(field.key, field.value)}
+              className="shrink-0 rounded-md border border-[var(--line)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface-2)]"
+            >
+              {copiedField === field.key ? t.copied : t.copy}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <p className="mt-3 text-xs text-[var(--muted)]">{t.publishPhotoUploadNote}</p>
+    </div>
+  );
+}
+
 export default function Home() {
   const [form, setForm] = useState<FormState>(initialForm);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -142,6 +270,7 @@ export default function Home() {
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [returnScrollY, setReturnScrollY] = useState<number | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [publishingPlatform, setPublishingPlatform] = useState<Platform | null>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [locale, setLocale] = useState<Locale>("en");
   const [themePreference, setThemePreference] = useState<ThemePreference>("system");
@@ -358,11 +487,13 @@ export default function Home() {
 
   const openDetails = (id: number) => {
     setReturnScrollY(window.scrollY);
+    setPublishingPlatform(null);
     setViewingId(id);
   };
 
   const closeDetails = (restoreScroll: boolean) => {
     setViewingId(null);
+    setPublishingPlatform(null);
     if (restoreScroll && returnScrollY !== null) {
       window.scrollTo({ top: returnScrollY, behavior: "smooth" });
     }
@@ -1035,15 +1166,31 @@ export default function Home() {
 
       {viewingEntry && (
         <section ref={detailsSectionRef} className="rounded-2xl border border-[var(--line)] bg-[var(--card)] p-5 shadow-sm sm:p-6">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-bold">{t.details} #{viewingEntry.id}</h2>
-            <button
-              type="button"
-              onClick={() => closeDetails(true)}
-              className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)]"
-            >
-              {t.close}
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPublishingPlatform(publishingPlatform === "vinted" ? null : "vinted")}
+                className={`rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors ${publishingPlatform === "vinted" ? "border-teal-700 bg-teal-600 text-white" : "border-teal-600 bg-teal-50 text-teal-800 hover:bg-teal-100 dark:bg-teal-950 dark:text-teal-200 dark:border-teal-700"}`}
+              >
+                {t.publishOn} Vinted
+              </button>
+              <button
+                type="button"
+                onClick={() => setPublishingPlatform(publishingPlatform === "wallapop" ? null : "wallapop")}
+                className={`rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors ${publishingPlatform === "wallapop" ? "border-teal-700 bg-teal-600 text-white" : "border-teal-600 bg-teal-50 text-teal-800 hover:bg-teal-100 dark:bg-teal-950 dark:text-teal-200 dark:border-teal-700"}`}
+              >
+                {t.publishOn} Wallapop
+              </button>
+              <button
+                type="button"
+                onClick={() => closeDetails(true)}
+                className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)]"
+              >
+                {t.close}
+              </button>
+            </div>
           </div>
 
           <div className="mt-4 grid gap-3">
@@ -1075,6 +1222,17 @@ export default function Home() {
               </div>
             ))}
           </div>
+
+          {publishingPlatform && (
+            <PublishWizardPanel
+              platform={publishingPlatform}
+              entry={viewingEntry}
+              copiedField={copiedField}
+              copyField={copyField}
+              onClose={() => setPublishingPlatform(null)}
+              t={t}
+            />
+          )}
 
           <div className="mt-6 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-3">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">

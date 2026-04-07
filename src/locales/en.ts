@@ -85,4 +85,13 @@ export const en = {
     "Create your sale ad once, keep it organized, and reuse it quickly across marketplaces.",
   footerIconCredit: "Project Icon",
   footerIconSource: "Shopping Bags (SVG Repo)",
+  publishTitle: "Publish on marketplace",
+  publishOn: "Publish on",
+  publishOpenPage: "Open new listing page",
+  publishNote: "Copy each field, then open the platform page and paste manually. Photos must be uploaded manually.",
+  publishFieldCategory: "Category",
+  publishFieldCondition: "Condition",
+  publishFieldSize: "Size",
+  publishPhotoUploadNote: "Download images from the section below, then upload them on the platform.",
+  publishClose: "Close",
 } as const satisfies Translations;
