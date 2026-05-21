@@ -46,3 +46,4 @@ data/uploads/*
 !data/uploads/.gitkeep
 storage/*
 !storage/.gitkeep
+/.tokensave
