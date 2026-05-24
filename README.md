@@ -4,6 +4,13 @@ MarketBridge is a self-hosted web app (Next.js) to prepare sale listings once, s
 
 The app is designed for personal use or small teams on private infrastructure.
 
+[![](https://img.shields.io/github/issues/gioxx/MarketBridge.svg)](https://github.com/gioxx/MarketBridge/issues)
+[![](https://img.shields.io/github/issues-pr-raw/gioxx/MarketBridge.svg)](https://github.com/gioxx/MarketBridge/pulls)
+[![MIT License](https://img.shields.io/github/license/gioxx/MarketBridge)](https://github.com/gioxx/MarketBridge/blob/main/LICENSE)
+[![](https://img.shields.io/badge/GHCR-available-blue?logo=docker)](https://github.com/users/gioxx/packages/container/package/MarketBridge)
+[![](https://img.shields.io/docker/pulls/gfsolone/marketbridge.svg)](https://hub.docker.com/r/gfsolone/marketbridge)
+[![](https://img.shields.io/docker/image-size/gfsolone/marketbridge/latest.svg)](https://hub.docker.com/r/gfsolone/marketbridge)
+
 ## What It Does
 
 - Create listings with structured fields: title, category, condition, size, price, description
